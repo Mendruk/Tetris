@@ -46,6 +46,7 @@
             this.pictureGameField.Size = new System.Drawing.Size(325, 650);
             this.pictureGameField.TabIndex = 0;
             this.pictureGameField.TabStop = false;
+            this.pictureGameField.Paint += new System.Windows.Forms.PaintEventHandler(this.pictureGameField_Paint);
             // 
             // pictureNextFigure
             // 
@@ -77,6 +78,8 @@
             // timer
             // 
             this.timer.Enabled = true;
+            this.timer.Interval = 200;
+            this.timer.Tick += new System.EventHandler(this.timer_Tick);
             // 
             // MainForm
             // 
