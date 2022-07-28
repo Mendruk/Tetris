@@ -7,8 +7,9 @@
         private Pen figurePen;
         private int width = 10;
         private int height = 20;
-        private FigurePart[] currentFigure;
-        private FigurePart[] nextFigure;
+        private Point[] currentFigure;
+        private Point[] nextFigure;
+        private Point[,] partsOnBotton;
 
         public Game()
         {
@@ -17,6 +18,7 @@
             currentFigure = CreateFigure(GetRandomFigureType());
             MoveFigureToCenterOfFieldWidth();
             nextFigure = CreateFigure(GetRandomFigureType());
+            partsOnBotton = new Point[width, height];
         }
 
         public void Update()
@@ -24,6 +26,11 @@
             if (!CheckBlockVertical()) MoveFigureOnePointDown();
             else
             {
+                foreach (Point point in currentFigure)
+                {
+                    partsOnBotton[point.X, point.Y] = point;
+                }
+
                 currentFigure = nextFigure;
                 MoveFigureToCenterOfFieldWidth();
                 nextFigure = CreateFigure(GetRandomFigureType());
@@ -32,34 +39,34 @@
 
         private void MoveFigureOnePointDown()
         {
-            foreach (FigurePart part in currentFigure)
+            foreach (Point point in currentFigure)
             {
-                part.Y++;
+                point.Y++;
             }
         }
         private void MoveFigureOnePointHorizontal(int direction)
         {
-            foreach (FigurePart part in currentFigure)
+            foreach (Point point in currentFigure)
             {
-                part.X+=direction;
+                point.X += direction;
             }
         }
 
         private bool CheckBlockVertical()
         {
-            foreach (FigurePart part in currentFigure)
+            foreach (Point point in currentFigure)
             {
-                if (part.Y == height - 1) return true;
+                if (point.Y == height - 1 || partsOnBotton[point.X, point.Y+1] != null) return true;
             }
             return false;
         }
 
         private bool CheckBlockHorizontal(int direction)
         {
-            foreach (FigurePart part in currentFigure)
+            foreach (Point point in currentFigure)
             {
-                if (direction == 1 && part.X == width-2 + direction) return true;
-                if (direction == -1 && part.X == 1 + direction) return true;
+                if (direction == 1 && point.X == width - 2 + direction) return true;
+                if (direction == -1 && point.X == 1 + direction) return true;
             }
             return false;
         }
@@ -68,7 +75,7 @@
         {
 
         }
-        
+
         public void MoveFigureHorizontal(int direction)
         {
             if (!CheckBlockHorizontal(direction))
@@ -80,27 +87,27 @@
             for (; !CheckBlockVertical(); MoveFigureOnePointDown()) ;
         }
 
-        private FigurePart[] CreateFigure(FigureType type)
+        private Point[] CreateFigure(FigureType type)
         {
             switch (type)
             {
                 case FigureType.O:
-                    return new FigurePart[] { new FigurePart(0, 0), new FigurePart(0, 1), new FigurePart(1, 0), new FigurePart(1, 1) };
+                    return new Point[] { new Point(0, 0), new Point(0, 1), new Point(1, 0), new Point(1, 1) };
                 case FigureType.J:
-                    return new FigurePart[] { new FigurePart(1, 0), new FigurePart(1, 1), new FigurePart(0, 2), new FigurePart(1, 2) };
+                    return new Point[] { new Point(1, 0), new Point(1, 1), new Point(0, 2), new Point(1, 2) };
                 case FigureType.L:
-                    return new FigurePart[] { new FigurePart(0, 0), new FigurePart(0, 1), new FigurePart(0, 2), new FigurePart(1, 2) };
+                    return new Point[] { new Point(0, 0), new Point(0, 1), new Point(0, 2), new Point(1, 2) };
                 case FigureType.S:
-                    return new FigurePart[] { new FigurePart(1, 0), new FigurePart(2, 0), new FigurePart(0, 1), new FigurePart(1, 1) };
+                    return new Point[] { new Point(1, 0), new Point(2, 0), new Point(0, 1), new Point(1, 1) };
                 case FigureType.Z:
-                    return new FigurePart[] { new FigurePart(0, 0), new FigurePart(1, 0), new FigurePart(1, 1), new FigurePart(2, 1) };
+                    return new Point[] { new Point(0, 0), new Point(1, 0), new Point(1, 1), new Point(2, 1) };
                 case FigureType.T:
-                    return new FigurePart[] { new FigurePart(0, 0), new FigurePart(1, 0), new FigurePart(2, 0), new FigurePart(1, 1) };
+                    return new Point[] { new Point(0, 0), new Point(1, 0), new Point(2, 0), new Point(1, 1) };
                 case FigureType.I:
-                    return new FigurePart[] { new FigurePart(0, 0), new FigurePart(1, 0), new FigurePart(2, 0), new FigurePart(3, 0) };
-                case FigureType. Dot:
-                    default:
-                    return new FigurePart[] { new FigurePart(0, 0) };
+                    return new Point[] { new Point(0, 0), new Point(1, 0), new Point(2, 0), new Point(3, 0) };
+                case FigureType.Dot:
+                default:
+                    return new Point[] { new Point(0, 0) };
             }
         }
 
@@ -132,34 +139,49 @@
 
         private void MoveFigureToCenterOfFieldWidth()
         {
-            foreach (FigurePart part in currentFigure)
+            foreach (Point point in currentFigure)
             {
-                part.X += width / 2 - 1;
+                point.X += width / 2 - 1;
             }
         }
 
         public void DrawFigure(Graphics graphics, int fieldWidth, int fieldHeight)
         {
-            foreach (FigurePart part in currentFigure)
+            foreach (Point part in currentFigure)
             {
                 graphics.FillRectangle(figureBrush, fieldWidth / this.width * part.X, fieldHeight / this.height * part.Y,
                     fieldWidth / this.width, fieldHeight / this.height);
                 graphics.DrawRectangle(figurePen, fieldWidth / this.width * part.X, fieldHeight / this.height * part.Y,
                     fieldWidth / this.width, fieldHeight / this.height);
+            }
+
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    if (partsOnBotton[x, y] != null)
+                    {
+                        graphics.FillRectangle(figureBrush, fieldWidth / this.width * x, fieldHeight / this.height * y,
+                            fieldWidth / this.width, fieldHeight / this.height);
+                        graphics.DrawRectangle(figurePen, fieldWidth / this.width * x, fieldHeight / this.height * y,
+                            fieldWidth / this.width, fieldHeight / this.height);
+                    }
+
+                }
             }
         }
 
         public void DrawNextFigure(Graphics graphics, int fieldWidth, int fieldHeight)
         {
-            foreach (FigurePart part in nextFigure)
+            foreach (Point point in nextFigure)
             {
-                graphics.FillRectangle(figureBrush, fieldWidth / this.width * part.X, fieldHeight / this.height * part.Y,
+                graphics.FillRectangle(figureBrush, fieldWidth / this.width * point.X, fieldHeight / this.height * point.Y,
                     fieldWidth / this.width, fieldHeight / this.height);
-                graphics.DrawRectangle(figurePen, fieldWidth / this.width * part.X, fieldHeight / this.height * part.Y,
+                graphics.DrawRectangle(figurePen, fieldWidth / this.width * point.X, fieldHeight / this.height * point.Y,
                     fieldWidth / this.width, fieldHeight / this.height);
             }
         }
     }
 
-    enum FigureType { O, J, L, S, Z, T, I, Dot};
+    enum FigureType { O, J, L, S, Z, T, I, Dot };
 }

@@ -1,11 +1,11 @@
 ﻿namespace Tetris
 {
-    public class FigurePart
+    public class Point
     {
         public int X;
         public int Y;
 
-        public FigurePart(int X,int Y)
+        public Point(int X,int Y)
         {
             this.X = X;
             this.Y = Y;
