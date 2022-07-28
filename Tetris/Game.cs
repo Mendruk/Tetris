@@ -7,6 +7,7 @@
         private Pen figurePen;
         private int width = 10;
         private int height = 20;
+        private int score = 0;
         private Point[] currentFigure;
         private Point[] nextFigure;
         private Point[,] partsOnBotton;
@@ -23,6 +24,14 @@
             partsOnBotton = new Point[width, height];
         }
 
+        public int Score
+        {
+            get
+            {
+                return score;
+            }
+        }
+
         public void Update()
         {
             if (!CheckBlockVertical()) MoveFigureOnePointDown();
@@ -33,6 +42,43 @@
                     partsOnBotton[point.X, point.Y] = point;
                 }
 
+                List<int> linesToDelite=new List<int>();
+                int poinCount = 0;
+
+                foreach (Point point in currentFigure)
+                {
+                    for (int x = 0; x < width; x++)
+                    {
+                        if (partsOnBotton[x, point.Y] != null) poinCount++;
+                    }
+
+                    if (poinCount == width)
+                    {
+                        linesToDelite.Add(point.Y);
+                        for (int x = 0; x < width; x++)
+                        {
+                            partsOnBotton[x, point.Y] = null;
+                        }
+                    }
+                    poinCount = 0;
+                }
+
+                linesToDelite.Sort();
+
+                foreach ( int lineNumber in linesToDelite)
+                {
+                    for (int y = lineNumber; y > 0; y--)
+                    {
+                        for (int x = 0; x < width; x++)
+                        {
+                            partsOnBotton[x,y]=partsOnBotton[x, y - 1];
+                            partsOnBotton[x, y - 1] = null;
+                        }
+                    }
+                }
+
+                if (linesToDelite.Count > 0) score += CalculateScore(linesToDelite.Count);
+
                 currentFigure = nextFigure;
                 figureReferencePoint = currentFigure[0];
                 MoveFigureToCenterOfFieldWidth();
@@ -40,6 +86,13 @@
             }
         }
 
+        private int CalculateScore(int line)
+        {
+            if (line > 0)
+                return (int)Math.Pow(2,line-1) * 100 + CalculateScore(line - 2);
+            else 
+                return 0;
+        }
         private void MoveFigureOnePointDown()
         {
             foreach (Point point in currentFigure)

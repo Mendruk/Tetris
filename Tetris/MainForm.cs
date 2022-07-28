@@ -22,6 +22,7 @@ namespace Tetris
         private void timer_Tick(object sender, EventArgs e)
         {
             game.Update();
+            labelScoreCount.Text = game.Score.ToString();
             Refresh();
         }
 
