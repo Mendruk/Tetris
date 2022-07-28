@@ -56,6 +56,7 @@
             this.pictureNextFigure.Size = new System.Drawing.Size(127, 137);
             this.pictureNextFigure.TabIndex = 1;
             this.pictureNextFigure.TabStop = false;
+            this.pictureNextFigure.Paint += new System.Windows.Forms.PaintEventHandler(this.pictureNextFigure_Paint);
             // 
             // labelScoreText
             // 
@@ -92,6 +93,7 @@
             this.Controls.Add(this.pictureGameField);
             this.Name = "MainForm";
             this.Text = "Tetris";
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.MainForm_KeyDown);
             ((System.ComponentModel.ISupportInitialize)(this.pictureGameField)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureNextFigure)).EndInit();
             this.ResumeLayout(false);
