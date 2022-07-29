@@ -33,7 +33,8 @@
             this.pictureNextFigure = new System.Windows.Forms.PictureBox();
             this.labelScoreText = new System.Windows.Forms.Label();
             this.labelScoreCount = new System.Windows.Forms.Label();
-            this.timer = new System.Windows.Forms.Timer(this.components);
+            this.mainTimer = new System.Windows.Forms.Timer(this.components);
+            this.graphicsTimer = new System.Windows.Forms.Timer(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.pictureGameField)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureNextFigure)).BeginInit();
             this.SuspendLayout();
@@ -76,11 +77,17 @@
             this.labelScoreCount.TabIndex = 3;
             this.labelScoreCount.Text = "0";
             // 
-            // timer
+            // mainTimer
             // 
-            this.timer.Enabled = true;
-            this.timer.Interval = 400;
-            this.timer.Tick += new System.EventHandler(this.timer_Tick);
+            this.mainTimer.Enabled = true;
+            this.mainTimer.Interval = 400;
+            this.mainTimer.Tick += new System.EventHandler(this.timer_Tick);
+            // 
+            // graphicsTimer
+            // 
+            this.graphicsTimer.Enabled = true;
+            this.graphicsTimer.Interval = 50;
+            this.graphicsTimer.Tick += new System.EventHandler(this.graphicsTimer_Tick);
             // 
             // MainForm
             // 
@@ -107,6 +114,7 @@
         private PictureBox pictureNextFigure;
         private Label labelScoreText;
         private Label labelScoreCount;
-        private System.Windows.Forms.Timer timer;
+        private System.Windows.Forms.Timer mainTimer;
+        private System.Windows.Forms.Timer graphicsTimer;
     }
 }

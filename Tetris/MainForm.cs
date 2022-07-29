@@ -11,7 +11,7 @@ namespace Tetris
 
         private void pictureGameField_Paint(object sender, PaintEventArgs e)
         {
-            game.DrawFigure(e.Graphics,pictureGameField.Width,pictureGameField.Height);
+            game.DrawGameField(e.Graphics,pictureGameField.Width,pictureGameField.Height);
         }
 
         private void pictureNextFigure_Paint(object sender, PaintEventArgs e)
@@ -22,8 +22,6 @@ namespace Tetris
         private void timer_Tick(object sender, EventArgs e)
         {
             game.Update();
-            labelScoreCount.Text = game.Score.ToString();
-            Refresh();
         }
 
         private void MainForm_KeyDown(object sender, KeyEventArgs e)
@@ -33,6 +31,10 @@ namespace Tetris
                 case Keys.W:
                 case Keys.Up:
                     game.RotateFigure();
+                    break;
+                case Keys.S:
+                case Keys.Down:
+                    game.MoveFigureDown();
                     break;
                 case Keys.A:
                 case Keys.Left:
@@ -46,6 +48,12 @@ namespace Tetris
                     game.PutDownFigure();
                     break;
             }
+        }
+
+        private void graphicsTimer_Tick(object sender, EventArgs e)
+        {
+            labelScoreCount.Text = game.Score.ToString();
+            Refresh();
         }
     }
 }
