@@ -1,3 +1,5 @@
+using Timer = System.Threading.Timer;
+
 namespace Tetris
 {
     public partial class MainForm : Form
@@ -22,6 +24,8 @@ namespace Tetris
         private void timer_Tick(object sender, EventArgs e)
         {
             game.Update();
+            labelScoreCount.Text = game.Score.ToString();
+            Refresh();
         }
 
         private void MainForm_KeyDown(object sender, KeyEventArgs e)
@@ -34,7 +38,7 @@ namespace Tetris
                     break;
                 case Keys.S:
                 case Keys.Down:
-                    game.MoveFigureDown();
+                    game.Update();
                     break;
                 case Keys.A:
                 case Keys.Left:
@@ -48,11 +52,6 @@ namespace Tetris
                     game.PutDownFigure();
                     break;
             }
-        }
-
-        private void graphicsTimer_Tick(object sender, EventArgs e)
-        {
-            labelScoreCount.Text = game.Score.ToString();
             Refresh();
         }
     }

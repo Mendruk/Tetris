@@ -34,7 +34,6 @@
             this.labelScoreText = new System.Windows.Forms.Label();
             this.labelScoreCount = new System.Windows.Forms.Label();
             this.mainTimer = new System.Windows.Forms.Timer(this.components);
-            this.graphicsTimer = new System.Windows.Forms.Timer(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.pictureGameField)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureNextFigure)).BeginInit();
             this.SuspendLayout();
@@ -80,14 +79,8 @@
             // mainTimer
             // 
             this.mainTimer.Enabled = true;
-            this.mainTimer.Interval = 400;
+            this.mainTimer.Interval = 1000;
             this.mainTimer.Tick += new System.EventHandler(this.timer_Tick);
-            // 
-            // graphicsTimer
-            // 
-            this.graphicsTimer.Enabled = true;
-            this.graphicsTimer.Interval = 50;
-            this.graphicsTimer.Tick += new System.EventHandler(this.graphicsTimer_Tick);
             // 
             // MainForm
             // 
@@ -115,6 +108,5 @@
         private Label labelScoreText;
         private Label labelScoreCount;
         private System.Windows.Forms.Timer mainTimer;
-        private System.Windows.Forms.Timer graphicsTimer;
     }
 }
