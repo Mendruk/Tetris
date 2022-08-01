@@ -54,5 +54,10 @@ namespace Tetris
             }
             Refresh();
         }
+
+        private void buttonRestart_Click(object sender, EventArgs e)
+        {
+            game.Start();
+        }
     }
 }

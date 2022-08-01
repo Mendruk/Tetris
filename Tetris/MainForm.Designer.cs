@@ -53,7 +53,7 @@
             this.pictureNextFigure.BackColor = System.Drawing.SystemColors.GradientInactiveCaption;
             this.pictureNextFigure.Location = new System.Drawing.Point(386, 12);
             this.pictureNextFigure.Name = "pictureNextFigure";
-            this.pictureNextFigure.Size = new System.Drawing.Size(127, 137);
+            this.pictureNextFigure.Size = new System.Drawing.Size(125, 125);
             this.pictureNextFigure.TabIndex = 1;
             this.pictureNextFigure.TabStop = false;
             this.pictureNextFigure.Paint += new System.Windows.Forms.PaintEventHandler(this.pictureNextFigure_Paint);
