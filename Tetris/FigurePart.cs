@@ -2,13 +2,11 @@
 
 public class FigurePart
 {
-    private readonly Figure figure;
     private int x;
     private int y;
 
-    public FigurePart(Figure figure, int x, int y, Brush brush)
+    public FigurePart(int x, int y, Brush brush)
     {
-        this.figure = figure;
         this.x = x;
         this.y = y;
         Brush = brush;
@@ -16,14 +14,14 @@ public class FigurePart
 
     public int X
     {
-        get => x + figure.shiftX;
-        set => x = value - figure.shiftX;
+        get => x;
+        set => x = value;
     }
 
     public int Y
     {
-        get => y + figure.shiftY;
-        set => y = value - figure.shiftY;
+        get => y;
+        set => y = value;
     }
 
     public Brush Brush { get; }

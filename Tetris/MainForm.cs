@@ -9,6 +9,7 @@ namespace Tetris
         {
             game = new Game();
             InitializeComponent();
+            
         }
 
         private void pictureGameField_Paint(object sender, PaintEventArgs e)
@@ -27,7 +28,7 @@ namespace Tetris
             labelScoreCount.Text = game.Score.ToString();
             Refresh();
         }
-
+        
         private void MainForm_KeyDown(object sender, KeyEventArgs e)
         {
             switch (e.KeyCode)
@@ -38,26 +39,21 @@ namespace Tetris
                     break;
                 case Keys.S:
                 case Keys.Down:
-                    game.Update();
+                    game.MoveFigureDown();
                     break;
                 case Keys.A:
                 case Keys.Left:
-                    game.MoveFigureHorizontal(-1);
+                    game.MoveFigureLeft();
                     break;
                 case Keys.D:
                 case Keys.Right:
-                    game.MoveFigureHorizontal(1);
+                    game.MoveFigureRight();
                     break;
                 case Keys.Space:
                     game.PutDownFigure();
                     break;
             }
             Refresh();
-        }
-
-        private void buttonRestart_Click(object sender, EventArgs e)
-        {
-            game.Start();
         }
     }
 }

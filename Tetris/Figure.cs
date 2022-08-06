@@ -14,105 +14,103 @@ public class Figure
         { FigureType.Dot, Brushes.Gray }
     };
 
-    private readonly FigurePart[] parts;
     private readonly Rotation rotationType;
-    private FigureType figureType;
-    public int shiftX;
-    public int shiftY;
 
     public Figure(FigureType figureType)
     {
-        this.figureType = figureType;
         if (brushes.TryGetValue(figureType, out Brush? brush))
 
             switch (figureType)
             {
                 case FigureType.O:
-                    parts = new[]
+                    Parts = new[]
                     {
-                        new(this, 0, 0, brush), new FigurePart(this, 0, 1, brush), new FigurePart(this, 1, 0, brush),
-                        new FigurePart(this, 1, 1, brush)
+                        new(0, 0, brush), new(0, 1, brush), new(1, 0, brush),
+                        new FigurePart(1, 1, brush)
                     };
-                    rotationType = Rotation.NotRoatting;
+                    rotationType = Rotation.NotRotating;
                     break;
                 case FigureType.J:
-                    parts = new[]
+                    Parts = new[]
                     {
-                        new(this, 1, 1, brush), new FigurePart(this, 1, 0, brush), new FigurePart(this, 0, 2, brush),
-                        new FigurePart(this, 1, 2, brush)
+                        new(1, 1, brush), new(1, 0, brush), new(0, 2, brush),
+                        new FigurePart(1, 2, brush)
                     };
                     rotationType = Rotation.Rotating;
                     break;
                 case FigureType.L:
-                    parts = new[]
+                    Parts = new[]
                     {
-                        new(this, 0, 1, brush), new FigurePart(this, 0, 0, brush), new FigurePart(this, 0, 2, brush),
-                        new FigurePart(this, 1, 2, brush)
+                        new(0, 1, brush), new(0, 0, brush), new(0, 2, brush),
+                        new FigurePart(1, 2, brush)
                     };
                     rotationType = Rotation.Rotating;
                     break;
                 case FigureType.S:
-                    parts = new[]
+                    Parts = new[]
                     {
-                        new(this, 1, 1, brush), new FigurePart(this, 1, 0, brush), new FigurePart(this, 2, 0, brush),
-                        new FigurePart(this, 0, 1, brush)
+                        new(1, 1, brush), new(1, 0, brush), new(2, 0, brush),
+                        new FigurePart(0, 1, brush)
                     };
-                    rotationType = Rotation.TwoState;
+                    rotationType = Rotation.TwoStateOfTurn;
                     break;
                 case FigureType.Z:
-                    parts = new[]
+                    Parts = new[]
                     {
-                        new(this, 1, 1, brush), new FigurePart(this, 0, 0, brush), new FigurePart(this, 1, 0, brush),
-                        new FigurePart(this, 2, 1, brush)
+                        new(1, 1, brush), new(0, 0, brush), new(1, 0, brush),
+                        new FigurePart(2, 1, brush)
                     };
-                    rotationType = Rotation.TwoState;
+                    rotationType = Rotation.TwoStateOfTurn;
                     break;
                 case FigureType.T:
-                    parts = new[]
+                    Parts = new[]
                     {
-                        new(this, 1, 0, brush), new FigurePart(this, 0, 0, brush), new FigurePart(this, 2, 0, brush),
-                        new FigurePart(this, 1, 1, brush)
+                        new(1, 0, brush), new (0, 0, brush), new (2, 0, brush),
+                        new FigurePart(1, 1, brush)
                     };
                     rotationType = Rotation.Rotating;
                     break;
                 case FigureType.I:
-                    parts = new[]
+                    Parts = new[]
                     {
-                        new(this, 1, 0, brush), new FigurePart(this, 0, 0, brush), new FigurePart(this, 2, 0, brush),
-                        new FigurePart(this, 3, 0, brush)
+                        new(1, 0, brush), new (0, 0, brush), new (2, 0, brush),
+                        new FigurePart(3, 0, brush)
                     };
-                    rotationType = Rotation.TwoState;
+                    rotationType = Rotation.TwoStateOfTurn;
                     break;
                 case FigureType.Dot:
                 default:
-                    parts = new FigurePart[] { new(this, 0, 0, brush) };
-                    rotationType = Rotation.NotRoatting;
+                    Parts = new FigurePart[] { new(0, 0, brush) };
+                    rotationType = Rotation.NotRotating;
                     break;
             }
 
-        ReferencePoint = parts[0];
+        ReferencePoint = Parts[0];
     }
 
-    public bool IsRotate { get; private set; }
-
-    public int Length => parts.Length;
+    public bool IsTurned { get; private set; }
 
     public FigurePart ReferencePoint { get; }
 
-    public FigurePart this[int index]
-    {
-        get => parts[index];
-        set => parts[index] = value;
-    }
+    public FigurePart[] Parts { get; }
+
+    public int X { get; set; }
+
+    public int Y { get; set; }
 
     public void MoveDown()
     {
-        shiftY++;
+        Y++;
     }
 
-    public void MoveHorizontal(int direction)
+    public void MoveLeft()
     {
-        shiftX += direction;
+        X--;
+    }
+
+    public void MoveRight()
+    {
+        X++;
     }
 
     public void Rotate()
@@ -122,20 +120,20 @@ public class Figure
             case Rotation.Rotating:
                 RotateClockwise();
                 break;
-            case Rotation.TwoState:
-                if (IsRotate)
+            case Rotation.TwoStateOfTurn:
+                if (IsTurned)
                 {
-                    RotateClockwise();
-                    IsRotate = false;
+                    RotateСounterСlockwise();
+                    IsTurned = false;
                 }
                 else
                 {
-                    RotateСounterСlockwise();
-                    IsRotate = true;
+                    RotateClockwise();
+                    IsTurned = true;
                 }
 
                 break;
-            case Rotation.NotRoatting:
+            case Rotation.NotRotating:
             default:
                 break;
         }
@@ -143,29 +141,29 @@ public class Figure
 
     private void RotateClockwise()
     {
-        for (int i = 0; i < parts.Length; i++)
+        foreach (FigurePart part in Parts)
         {
-            int rotatedFigurePartX = ReferencePoint.X + (ReferencePoint.Y - parts[i].Y);
-            parts[i].Y = ReferencePoint.Y + (parts[i].X - ReferencePoint.X);
-            parts[i].X = rotatedFigurePartX;
+            int rotatedFigurePartX = ReferencePoint.X + (ReferencePoint.Y - part.Y);
+            part.Y = ReferencePoint.Y + (part.X - ReferencePoint.X);
+            part.X = rotatedFigurePartX;
         }
     }
 
     private void RotateСounterСlockwise()
     {
-        for (int i = 0; i < parts.Length; i++)
+        foreach (FigurePart part in Parts)
         {
-            int rotatedFigurePartX = ReferencePoint.X - (ReferencePoint.Y - parts[i].Y);
-            parts[i].Y = ReferencePoint.Y - (parts[i].X - ReferencePoint.X);
-            parts[i].X = rotatedFigurePartX;
+            int rotatedFigurePartX = ReferencePoint.X - (ReferencePoint.Y - part.Y);
+            part.Y = ReferencePoint.Y - (part.X - ReferencePoint.X);
+            part.X = rotatedFigurePartX;
         }
     }
 
     public void Draw(Graphics graphics, int fieldWidth, int fieldHeight, int widthInCell, int heightInCell)
     {
-        foreach (FigurePart part in parts)
-            graphics.FillRectangle(part.Brush, fieldWidth / widthInCell * part.X,
-                fieldHeight / heightInCell * part.Y,
+        foreach (FigurePart part in Parts)
+            graphics.FillRectangle(part.Brush, fieldWidth / widthInCell * (part.X + X),
+                fieldHeight / heightInCell * (part.Y + Y),
                 fieldWidth / widthInCell, fieldHeight / heightInCell);
     }
 }
@@ -185,6 +183,6 @@ public enum FigureType
 public enum Rotation
 {
     Rotating,
-    NotRoatting,
-    TwoState
+    NotRotating,
+    TwoStateOfTurn
 }
