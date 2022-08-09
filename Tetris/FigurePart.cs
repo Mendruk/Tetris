@@ -2,27 +2,16 @@
 
 public class FigurePart
 {
-    private int x;
-    private int y;
-
     public FigurePart(int x, int y, Brush brush)
     {
-        this.x = x;
-        this.y = y;
+        X = x;
+        Y = y;
         Brush = brush;
     }
 
-    public int X
-    {
-        get => x;
-        set => x = value;
-    }
+    public int X { get; set; }
 
-    public int Y
-    {
-        get => y;
-        set => y = value;
-    }
+    public int Y { get; set; }
 
     public Brush Brush { get; }
 }

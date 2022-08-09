@@ -2,7 +2,7 @@
 
 public class Figure
 {
-    public static Dictionary<FigureType, Brush> brushes = new()
+    private static Dictionary<FigureType, Brush> brushes = new()
     {
         { FigureType.O, Brushes.DarkRed },
         { FigureType.J, Brushes.DarkOrange },
@@ -14,89 +14,100 @@ public class Figure
         { FigureType.Dot, Brushes.Gray }
     };
 
-    private readonly Rotation rotationType;
+    private Rotation rotationType;
 
     public Figure(FigureType figureType)
     {
+        StatesOfFigureParts = new List<FigurePart[]>();
         if (brushes.TryGetValue(figureType, out Brush? brush))
-
             switch (figureType)
             {
                 case FigureType.O:
-                    Parts = new[]
+                    StatesOfFigureParts.Add(new FigurePart[]
                     {
-                        new(0, 0, brush), new(0, 1, brush), new(1, 0, brush),
-                        new FigurePart(1, 1, brush)
-                    };
+                        new(0, 0, brush), new(0, 1, brush), new(1, 0, brush), new(1, 1, brush)
+                    });
                     rotationType = Rotation.NotRotating;
                     break;
                 case FigureType.J:
-                    Parts = new[]
+                    StatesOfFigureParts.Add(new FigurePart[]
                     {
-                        new(1, 1, brush), new(1, 0, brush), new(0, 2, brush),
-                        new FigurePart(1, 2, brush)
-                    };
+                        new(1, 1, brush), new(1, 0, brush), new(0, 2, brush), new(1, 2, brush)
+                    });
                     rotationType = Rotation.Rotating;
                     break;
                 case FigureType.L:
-                    Parts = new[]
+                    StatesOfFigureParts.Add(new FigurePart[]
                     {
-                        new(0, 1, brush), new(0, 0, brush), new(0, 2, brush),
-                        new FigurePart(1, 2, brush)
-                    };
+                        new(0, 1, brush), new(0, 0, brush), new(0, 2, brush), new(1, 2, brush)
+                    });
                     rotationType = Rotation.Rotating;
                     break;
                 case FigureType.S:
-                    Parts = new[]
+                    StatesOfFigureParts.Add(new FigurePart[]
                     {
-                        new(1, 1, brush), new(1, 0, brush), new(2, 0, brush),
-                        new FigurePart(0, 1, brush)
-                    };
+                        new(1, 1, brush), new(1, 0, brush), new(2, 0, brush), new(0, 1, brush)
+                    });
                     rotationType = Rotation.TwoStateOfTurn;
                     break;
                 case FigureType.Z:
-                    Parts = new[]
+                    StatesOfFigureParts.Add(new FigurePart[]
                     {
-                        new(1, 1, brush), new(0, 0, brush), new(1, 0, brush),
-                        new FigurePart(2, 1, brush)
-                    };
+                        new(1, 1, brush), new(0, 0, brush), new(1, 0, brush), new(2, 1, brush)
+                    });
                     rotationType = Rotation.TwoStateOfTurn;
                     break;
                 case FigureType.T:
-                    Parts = new[]
+                    StatesOfFigureParts.Add(new FigurePart[]
                     {
-                        new(1, 0, brush), new (0, 0, brush), new (2, 0, brush),
-                        new FigurePart(1, 1, brush)
-                    };
+                        new(1, 0, brush), new(0, 0, brush), new(2, 0, brush), new(1, 1, brush)
+                    });
                     rotationType = Rotation.Rotating;
                     break;
                 case FigureType.I:
-                    Parts = new[]
+                    StatesOfFigureParts.Add(new FigurePart[]
                     {
-                        new(1, 0, brush), new (0, 0, brush), new (2, 0, brush),
-                        new FigurePart(3, 0, brush)
-                    };
+                        new(1, 0, brush), new(0, 0, brush), new(2, 0, brush), new(3, 0, brush)
+                    });
                     rotationType = Rotation.TwoStateOfTurn;
                     break;
                 case FigureType.Dot:
                 default:
-                    Parts = new FigurePart[] { new(0, 0, brush) };
+                    StatesOfFigureParts.Add(new FigurePart[] { new(0, 0, brush) });
                     rotationType = Rotation.NotRotating;
                     break;
             }
 
-        ReferencePoint = Parts[0];
-    }
+        ReferencePoint = StatesOfFigureParts[0][0];
 
-    public bool IsTurned { get; private set; }
+        switch (rotationType)
+        {
+            case Rotation.Rotating:
+                FillAllRotationState(3);
+                break;
+            case Rotation.TwoStateOfTurn:
+                FillAllRotationState(1);
+                break;
+            case Rotation.NotRotating:
+            default:
+                break;
+        }
+    }
 
     public FigurePart ReferencePoint { get; }
 
-    public FigurePart[] Parts { get; }
+    public List<FigurePart[]> StatesOfFigureParts { get; set; }
 
-    public int X { get; set; }
+    public int FigureRotationIndex { get; private set; }
 
-    public int Y { get; set; }
+    public int X { get; private set; }
+
+    public int Y { get; private set; }
+
+    public void MoveToMiddleOfWidth(int width)
+    {
+        X = width / 2 - 1;
+    }
 
     public void MoveDown()
     {
@@ -113,55 +124,40 @@ public class Figure
         X++;
     }
 
+    public FigurePart[] NextRotationState()
+    {
+        return StatesOfFigureParts[(FigureRotationIndex + 1) % StatesOfFigureParts.Count];
+    }
+
+    private void FillAllRotationState(int number)
+    {
+        for (int i = 1; i <= number; i++)
+        {
+            StatesOfFigureParts.Add(NextRorationStateOfFigure(StatesOfFigureParts[i - 1]));
+        }
+    }
+
     public void Rotate()
     {
-        switch (rotationType)
-        {
-            case Rotation.Rotating:
-                RotateClockwise();
-                break;
-            case Rotation.TwoStateOfTurn:
-                if (IsTurned)
-                {
-                    RotateСounterСlockwise();
-                    IsTurned = false;
-                }
-                else
-                {
-                    RotateClockwise();
-                    IsTurned = true;
-                }
-
-                break;
-            case Rotation.NotRotating:
-            default:
-                break;
-        }
+        FigureRotationIndex = (FigureRotationIndex + 1) % StatesOfFigureParts.Count;
     }
 
-    private void RotateClockwise()
+    private FigurePart[] NextRorationStateOfFigure(FigurePart[] parts)
     {
-        foreach (FigurePart part in Parts)
+        FigurePart[] rotatedFigureParts = new FigurePart[parts.Length];
+        for (int i = 0; i < parts.Length; i++)
         {
-            int rotatedFigurePartX = ReferencePoint.X + (ReferencePoint.Y - part.Y);
-            part.Y = ReferencePoint.Y + (part.X - ReferencePoint.X);
-            part.X = rotatedFigurePartX;
+            int rotatedFigurePartX = ReferencePoint.X + (ReferencePoint.Y - parts[i].Y);
+            int rotatedFigurePartY = ReferencePoint.Y + (parts[i].X - ReferencePoint.X);
+            rotatedFigureParts[i] = new FigurePart(rotatedFigurePartX, rotatedFigurePartY, parts[i].Brush);
         }
-    }
 
-    private void RotateСounterСlockwise()
-    {
-        foreach (FigurePart part in Parts)
-        {
-            int rotatedFigurePartX = ReferencePoint.X - (ReferencePoint.Y - part.Y);
-            part.Y = ReferencePoint.Y - (part.X - ReferencePoint.X);
-            part.X = rotatedFigurePartX;
-        }
+        return rotatedFigureParts;
     }
 
     public void Draw(Graphics graphics, int fieldWidth, int fieldHeight, int widthInCell, int heightInCell)
     {
-        foreach (FigurePart part in Parts)
+        foreach (FigurePart part in StatesOfFigureParts[FigureRotationIndex])
             graphics.FillRectangle(part.Brush, fieldWidth / widthInCell * (part.X + X),
                 fieldHeight / heightInCell * (part.Y + Y),
                 fieldWidth / widthInCell, fieldHeight / heightInCell);

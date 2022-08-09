@@ -2,14 +2,14 @@
 
 public class Game
 {
+    private readonly Random random = new();
     private readonly Pen gridPen;
     private readonly int height = 20;
-    private readonly Random random = new();
     private readonly int width = 10;
     private Figure currentFigure;
-    private bool isPause = true;
     private Figure nextFigure;
     private List<Brush[]> partsOnBottom;
+    private bool isPause = true;
 
     public Game()
     {
@@ -19,80 +19,60 @@ public class Game
 
     public int Score { get; private set; }
 
-    public void Start()
+    private void Start()
     {
         isPause = false;
         Score = 0;
         currentFigure = new Figure(GetRandomFigureType());
+        currentFigure.MoveToMiddleOfWidth(width);
         nextFigure = new Figure(GetRandomFigureType());
         partsOnBottom = new List<Brush[]>();
 
-        for (int i = 0; i < height; i++)
-        {
-            partsOnBottom.Add(new Brush[width]);
-        }
+        for (int i = 0; i < height; i++) partsOnBottom.Add(new Brush[width]);
     }
 
     public void Update()
     {
-        if(!isPause)
+        if (!isPause)
             MoveFigureDown();
-    }
-    private int CalculateScore(int linesCount)
-    {
-        if (linesCount > 0)
-            return (int)Math.Pow(2, linesCount) * 100 - 100;
-        return 0;
     }
 
     private bool CanMoveFigureDown()
     {
-        foreach (FigurePart part in currentFigure.Parts)
-            if (part.Y + currentFigure.Y >= height - 1 || partsOnBottom[part.Y + currentFigure.Y + 1][part.X + currentFigure.X] != null)
+        foreach (FigurePart part in currentFigure.StatesOfFigureParts[currentFigure.FigureRotationIndex])
+            if (part.Y + currentFigure.Y >= height - 1 ||
+                partsOnBottom[part.Y + currentFigure.Y + 1][part.X + currentFigure.X] != null)
                 return false;
         return true;
     }
 
     private bool CanMoveFigureLeft()
     {
-        foreach (FigurePart part in currentFigure.Parts)
-            if (part.X + currentFigure.X == 0 || partsOnBottom[part.Y + currentFigure.Y][part.X + currentFigure.X - 1] != null)
+        foreach (FigurePart part in currentFigure.StatesOfFigureParts[currentFigure.FigureRotationIndex])
+            if (part.X + currentFigure.X == 0 ||
+                partsOnBottom[part.Y + currentFigure.Y][part.X + currentFigure.X - 1] != null)
                 return false;
         return true;
     }
 
     private bool CanMoveFigureRight()
     {
-        foreach (FigurePart part in currentFigure.Parts)
-        {
-            if (part.X + currentFigure.X == width - 1 || partsOnBottom[part.Y + currentFigure.Y][part.X + currentFigure.X + 1] != null)
+        foreach (FigurePart part in currentFigure.StatesOfFigureParts[currentFigure.FigureRotationIndex])
+            if (part.X + currentFigure.X == width - 1 ||
+                partsOnBottom[part.Y + currentFigure.Y][part.X + currentFigure.X + 1] != null)
                 return false;
-        }
         return true;
     }
 
     private bool CanRotateFigure()
     {
-        if (currentFigure.IsTurned)
-            foreach (FigurePart part in currentFigure.Parts)
-            {
-                int rotatedFigurePartX = currentFigure.ReferencePoint.X + currentFigure.X + (currentFigure.ReferencePoint.Y + currentFigure.Y - (part.Y + currentFigure.Y));
-                int rotatedFigurePartY = currentFigure.ReferencePoint.Y + currentFigure.Y + (part.X + currentFigure.X - (currentFigure.ReferencePoint.X + currentFigure.X));
-
-                if (rotatedFigurePartX < 0 || rotatedFigurePartX >= width || rotatedFigurePartY < 0 ||
-                    rotatedFigurePartY >= height || partsOnBottom[rotatedFigurePartY][rotatedFigurePartX] != null)
-                    return false;
-            }
-        else
-            foreach (FigurePart part in currentFigure.Parts)
-            {
-                int rotatedFigurePartX = currentFigure.ReferencePoint.X + currentFigure.X - (currentFigure.ReferencePoint.Y + currentFigure.Y - (part.Y + currentFigure.Y));
-                int rotatedFigurePartY = currentFigure.ReferencePoint.Y + currentFigure.Y - (part.X + currentFigure.X - (currentFigure.ReferencePoint.X + currentFigure.X));
-
-                if (rotatedFigurePartX < 0 || rotatedFigurePartX >= width || rotatedFigurePartY < 0 ||
-                    rotatedFigurePartY >= height || partsOnBottom[rotatedFigurePartY][rotatedFigurePartX] != null)
-                    return false;
-            }
+        foreach (FigurePart part in currentFigure.NextRotationState())
+        {
+            if (part.X + currentFigure.X < 0 || part.X + currentFigure.X >= width || part.Y + currentFigure.Y < 0 ||
+                part.Y + currentFigure.Y >= height ||
+                partsOnBottom[part.Y + currentFigure.Y][part.X + currentFigure.X] != null)
+                return false;
+        }
 
         return true;
     }
@@ -100,7 +80,9 @@ public class Game
     public void RotateFigure()
     {
         if (CanRotateFigure())
+        {
             currentFigure.Rotate();
+        }
     }
 
     public void MoveFigureLeft()
@@ -128,13 +110,14 @@ public class Game
             ClearFullLinesPartsOnBottom();
 
             currentFigure = nextFigure;
+            currentFigure.MoveToMiddleOfWidth(width);
             nextFigure = new Figure(GetRandomFigureType());
         }
     }
 
     private void AddFigureToPartsOnBottom()
     {
-        foreach (FigurePart part in currentFigure.Parts)
+        foreach (FigurePart part in currentFigure.StatesOfFigureParts[currentFigure.FigureRotationIndex])
         {
             if (partsOnBottom[part.Y + currentFigure.Y][part.X + currentFigure.X] != null)
             {
@@ -149,36 +132,36 @@ public class Game
     private void ClearFullLinesPartsOnBottom()
     {
         List<int> linesToDelete = new();
-        foreach (FigurePart part in currentFigure.Parts)
+        foreach (FigurePart part in currentFigure.StatesOfFigureParts[currentFigure.FigureRotationIndex])
         {
             bool isFullLine = true;
             for (int i = 0; i < partsOnBottom[part.Y + currentFigure.Y].Length; i++)
-            {
                 if (partsOnBottom[part.Y + currentFigure.Y][i] == null)
                     isFullLine = false;
-            }
 
             if (!linesToDelete.Contains(part.Y + currentFigure.Y) && isFullLine)
-            {
-
                 linesToDelete.Add(part.Y + currentFigure.Y);
-            }
         }
+
         linesToDelete.Sort();
         foreach (int lineNumber in linesToDelete)
         {
-            for (int i = 0; i < partsOnBottom[lineNumber].Length; i++)
-            {
-                partsOnBottom[lineNumber][i] = null;
-            }
+            for (int i = 0; i < partsOnBottom[lineNumber].Length; i++) partsOnBottom[lineNumber][i] = null;
             partsOnBottom.Insert(0, partsOnBottom[lineNumber]);
             partsOnBottom.RemoveAt(lineNumber + 1);
-
         }
 
         if (linesToDelete.Count > 0)
             Score += CalculateScore(linesToDelete.Count);
     }
+
+    private int CalculateScore(int linesCount)
+    {
+        if (linesCount > 0)
+            return (int)Math.Pow(2, linesCount) * 100 - 100;
+        return 0;
+    }
+
     public void PutDownFigure()
     {
         while (CanMoveFigureDown())
@@ -216,8 +199,10 @@ public class Game
     {
         isPause = true;
         DialogResult result = MessageBox.Show("Game Over! Restart?", "Game Over", MessageBoxButtons.YesNo);
-        if (result == DialogResult.Yes) Start();
-        if (result == DialogResult.No) ShowFailMessage();
+        if (result == DialogResult.Yes)
+            Start();
+        if (result == DialogResult.No)
+            ShowFailMessage();
     }
 
     public void DrawGameField(Graphics graphics, int fieldWidth, int fieldHeight)
@@ -225,14 +210,14 @@ public class Game
         currentFigure.Draw(graphics, fieldWidth, fieldHeight, width, height);
 
         for (int x = 0; x < width; x++)
-            for (int y = 0; y < height; y++)
-            {
-                if (partsOnBottom[y][x] != null)
-                    graphics.FillRectangle(partsOnBottom[y][x], fieldWidth / width * x, fieldHeight / height * y,
-                        fieldWidth / width, fieldHeight / height);
-                graphics.DrawRectangle(gridPen, fieldWidth / width * x, fieldHeight / height * y,
+        for (int y = 0; y < height; y++)
+        {
+            if (partsOnBottom[y][x] != null)
+                graphics.FillRectangle(partsOnBottom[y][x], fieldWidth / width * x, fieldHeight / height * y,
                     fieldWidth / width, fieldHeight / height);
-            }
+            graphics.DrawRectangle(gridPen, fieldWidth / width * x, fieldHeight / height * y,
+                fieldWidth / width, fieldHeight / height);
+        }
     }
 
     public void DrawNextFigure(Graphics graphics, int fieldWidth, int fieldHeight)

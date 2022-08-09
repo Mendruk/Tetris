@@ -79,7 +79,7 @@
             // mainTimer
             // 
             this.mainTimer.Enabled = true;
-            this.mainTimer.Interval = 1000;
+            this.mainTimer.Interval = 250;
             this.mainTimer.Tick += new System.EventHandler(this.timer_Tick);
             // 
             // MainForm
