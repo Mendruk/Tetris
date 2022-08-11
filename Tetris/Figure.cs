@@ -2,7 +2,7 @@
 
 public class Figure
 {
-    private static Dictionary<FigureType, Brush> brushes = new()
+    private static readonly Dictionary<FigureType, Brush> brushes = new()
     {
         { FigureType.O, Brushes.DarkRed },
         { FigureType.J, Brushes.DarkOrange },
@@ -14,99 +14,124 @@ public class Figure
         { FigureType.Dot, Brushes.Gray }
     };
 
-    private Rotation rotationType;
+    private FigureType figureType;
 
+    private readonly RotationType rotationTypeType;
+    public Brush Brush { get; }
+
+    public Point ReferencePoint { get; }
+
+    public List<Point[]> StatesOfFigurePoints { get; set; }
+
+    public int FigureRotationIndex { get; private set; }
+
+    private int X;
+
+    private int Y;
+
+    //to be continued...
     public Figure(FigureType figureType)
     {
-        StatesOfFigureParts = new List<FigurePart[]>();
+        this.figureType = figureType;
+        StatesOfFigurePoints = new List<Point[]>();
+        
         if (brushes.TryGetValue(figureType, out Brush? brush))
+        {
             switch (figureType)
             {
                 case FigureType.O:
-                    StatesOfFigureParts.Add(new FigurePart[]
+                    StatesOfFigurePoints.Add(new Point[]
                     {
-                        new(0, 0, brush), new(0, 1, brush), new(1, 0, brush), new(1, 1, brush)
+                        new(0, 0), new(0, 1), new(1, 0), new(1, 1)
                     });
-                    rotationType = Rotation.NotRotating;
+                    rotationTypeType = RotationType.NotRotating;
                     break;
                 case FigureType.J:
-                    StatesOfFigureParts.Add(new FigurePart[]
+                    StatesOfFigurePoints.Add(new Point[]
                     {
-                        new(1, 1, brush), new(1, 0, brush), new(0, 2, brush), new(1, 2, brush)
+                        new(1, 1), new(1, 0), new(0, 2), new(1, 2)
                     });
-                    rotationType = Rotation.Rotating;
+                    rotationTypeType = RotationType.Rotating;
                     break;
                 case FigureType.L:
-                    StatesOfFigureParts.Add(new FigurePart[]
+                    StatesOfFigurePoints.Add(new Point[]
                     {
-                        new(0, 1, brush), new(0, 0, brush), new(0, 2, brush), new(1, 2, brush)
+                        new(0, 1), new(0, 0), new(0, 2), new(1, 2)
                     });
-                    rotationType = Rotation.Rotating;
+                    rotationTypeType = RotationType.Rotating;
                     break;
                 case FigureType.S:
-                    StatesOfFigureParts.Add(new FigurePart[]
+                    StatesOfFigurePoints.Add(new Point[]
                     {
-                        new(1, 1, brush), new(1, 0, brush), new(2, 0, brush), new(0, 1, brush)
+                        new(1, 1), new(1, 0), new(2, 0), new(0, 1)
                     });
-                    rotationType = Rotation.TwoStateOfTurn;
+                    rotationTypeType = RotationType.TwoStateOfTurn;
                     break;
                 case FigureType.Z:
-                    StatesOfFigureParts.Add(new FigurePart[]
+                    StatesOfFigurePoints.Add(new Point[]
                     {
-                        new(1, 1, brush), new(0, 0, brush), new(1, 0, brush), new(2, 1, brush)
+                        new(1, 1), new(0, 0), new(1, 0), new(2, 1)
                     });
-                    rotationType = Rotation.TwoStateOfTurn;
+                    rotationTypeType = RotationType.TwoStateOfTurn;
                     break;
                 case FigureType.T:
-                    StatesOfFigureParts.Add(new FigurePart[]
+                    StatesOfFigurePoints.Add(new Point[]
                     {
-                        new(1, 0, brush), new(0, 0, brush), new(2, 0, brush), new(1, 1, brush)
+                        new(1, 0), new(0, 0), new(2, 0), new(1, 1)
                     });
-                    rotationType = Rotation.Rotating;
+                    rotationTypeType = RotationType.Rotating;
                     break;
                 case FigureType.I:
-                    StatesOfFigureParts.Add(new FigurePart[]
+                    StatesOfFigurePoints.Add(new Point[]
                     {
-                        new(1, 0, brush), new(0, 0, brush), new(2, 0, brush), new(3, 0, brush)
+                        new(1, 0), new(0, 0), new(2, 0), new(3, 0)
                     });
-                    rotationType = Rotation.TwoStateOfTurn;
+                    rotationTypeType = RotationType.TwoStateOfTurn;
                     break;
                 case FigureType.Dot:
-                default:
-                    StatesOfFigureParts.Add(new FigurePart[] { new(0, 0, brush) });
-                    rotationType = Rotation.NotRotating;
+                    StatesOfFigurePoints.Add(new Point[]
+                    {
+                        new(0, 0)
+                    });
+                    rotationTypeType = RotationType.NotRotating;
                     break;
             }
 
-        ReferencePoint = StatesOfFigureParts[0][0];
+            Brush = brush;
+        }
 
-        switch (rotationType)
+        ReferencePoint = StatesOfFigurePoints[0][0];
+
+        switch (rotationTypeType)
         {
-            case Rotation.Rotating:
-                FillAllRotationState(3);
+            case RotationType.Rotating:
+                FillOtherRotationState(3);
                 break;
-            case Rotation.TwoStateOfTurn:
-                FillAllRotationState(1);
+            case RotationType.TwoStateOfTurn:
+                FillOtherRotationState(1);
                 break;
-            case Rotation.NotRotating:
+            case RotationType.NotRotating:
             default:
                 break;
         }
     }
 
-    public FigurePart ReferencePoint { get; }
-
-    public List<FigurePart[]> StatesOfFigureParts { get; set; }
-
-    public int FigureRotationIndex { get; private set; }
-
-    public int X { get; private set; }
-
-    public int Y { get; private set; }
-
-    public void MoveToMiddleOfWidth(int width)
+    public Point[] GetFigurePoints()
     {
-        X = width / 2 - 1;
+        return StatesOfFigurePoints[FigureRotationIndex]
+            .Select(point => new Point(point.X + X, point.Y + Y))
+            .ToArray();
+    }
+    public Point[] GetNextRotationFigurePoints()
+    {
+        return StatesOfFigurePoints[(FigureRotationIndex + 1) % StatesOfFigurePoints.Count]
+            .Select(point => new Point(point.X + X, point.Y + Y))
+            .ToArray();
+    }
+
+    public void ReduceHorizontally(int indent)
+    {
+        X = indent;
     }
 
     public void MoveDown()
@@ -124,61 +149,43 @@ public class Figure
         X++;
     }
 
-    public FigurePart[] NextRotationState()
-    {
-        return StatesOfFigureParts[(FigureRotationIndex + 1) % StatesOfFigureParts.Count];
-    }
-
-    private void FillAllRotationState(int number)
+    private void FillOtherRotationState(int number)
     {
         for (int i = 1; i <= number; i++)
-        {
-            StatesOfFigureParts.Add(NextRorationStateOfFigure(StatesOfFigureParts[i - 1]));
-        }
+            StatesOfFigurePoints.Add(NextRorationStateOfFigure(StatesOfFigurePoints[i - 1]));
     }
 
     public void Rotate()
     {
-        FigureRotationIndex = (FigureRotationIndex + 1) % StatesOfFigureParts.Count;
+        FigureRotationIndex = (FigureRotationIndex + 1) % StatesOfFigurePoints.Count;
     }
 
-    private FigurePart[] NextRorationStateOfFigure(FigurePart[] parts)
+    private Point[] NextRorationStateOfFigure(Point[] points)
     {
-        FigurePart[] rotatedFigureParts = new FigurePart[parts.Length];
-        for (int i = 0; i < parts.Length; i++)
-        {
-            int rotatedFigurePartX = ReferencePoint.X + (ReferencePoint.Y - parts[i].Y);
-            int rotatedFigurePartY = ReferencePoint.Y + (parts[i].X - ReferencePoint.X);
-            rotatedFigureParts[i] = new FigurePart(rotatedFigurePartX, rotatedFigurePartY, parts[i].Brush);
-        }
-
-        return rotatedFigureParts;
+        return points
+            .Select(point => new Point(
+                ReferencePoint.X + (ReferencePoint.Y - point.Y),
+                ReferencePoint.Y + (point.X - ReferencePoint.X)))
+            .ToArray();
     }
 
-    public void Draw(Graphics graphics, int fieldWidth, int fieldHeight, int widthInCell, int heightInCell)
+    public void DrawFigure(Graphics graphics, int cellWidth, int cellHeight)
     {
-        foreach (FigurePart part in StatesOfFigureParts[FigureRotationIndex])
-            graphics.FillRectangle(part.Brush, fieldWidth / widthInCell * (part.X + X),
-                fieldHeight / heightInCell * (part.Y + Y),
-                fieldWidth / widthInCell, fieldHeight / heightInCell);
+        foreach (Point part in GetFigurePoints())
+            graphics.FillRectangle(Brush,
+                cellWidth * part.X,
+                cellHeight * part.Y,
+                cellWidth,
+                cellHeight);
     }
-}
 
-public enum FigureType
-{
-    O,
-    J,
-    L,
-    S,
-    Z,
-    T,
-    I,
-    Dot
-}
-
-public enum Rotation
-{
-    Rotating,
-    NotRotating,
-    TwoStateOfTurn
+    public void DrawFigureStructure(Graphics graphics, int cellWidth, int cellHeight)
+    {
+        foreach (Point part in StatesOfFigurePoints[FigureRotationIndex])
+            graphics.FillRectangle(Brush,
+                cellWidth * part.X,
+                cellHeight * part.Y,
+                cellWidth,
+                cellHeight);
+    }
 }

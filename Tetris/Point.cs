@@ -1,17 +1,15 @@
 ﻿namespace Tetris;
 
-public class FigurePart
+public class Point
 {
-    public FigurePart(int x, int y, Brush brush)
+    public Point(int x, int y)
     {
         X = x;
         Y = y;
-        Brush = brush;
     }
 
     public int X { get; set; }
 
     public int Y { get; set; }
 
-    public Brush Brush { get; }
 }

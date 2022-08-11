@@ -26,7 +26,8 @@ namespace Tetris
         {
             game.Update();
             labelScoreCount.Text = game.Score.ToString();
-            Refresh();
+            pictureGameField.Refresh();
+            pictureNextFigure.Refresh();
         }
         
         private void MainForm_KeyDown(object sender, KeyEventArgs e)
@@ -53,7 +54,8 @@ namespace Tetris
                     game.PutDownFigure();
                     break;
             }
-            Refresh();
+            pictureGameField.Refresh();
+            pictureNextFigure.Refresh();
         }
     }
 }
