@@ -2,9 +2,8 @@
 
 public class Game
 {
-    private readonly Random random = new();
-    private readonly Pen gridPen = Pens.Black;
     private readonly Brush emptyCellBrush = Brushes.Azure;
+    private readonly Pen gridPen = Pens.Black;
     private readonly int height = 20;
     private readonly int width = 10;
     private Figure currentFigure;
@@ -15,17 +14,17 @@ public class Game
     public Game()
     {
         Start();
+        currentFigure = new Figure(FigureType.T);
     }
 
     public int Score { get; private set; }
 
     private void Start()
     {
-
         Score = 0;
-        currentFigure = new Figure(GetRandomFigureType());
+        currentFigure = Figure.GetRandomFigure();
         currentFigure.ReduceHorizontally(width / 2 - 1);
-        nextFigure = new Figure(GetRandomFigureType());
+        nextFigure = Figure.GetRandomFigure();
 
         partsOnBottom = new List<Brush[]>();
 
@@ -44,42 +43,40 @@ public class Game
             MoveFigureDown();
     }
 
-    private bool CanMoveFigureDown()
+    public void DrawGameField(Graphics graphics, int fieldWidth, int fieldHeight)
     {
-        return currentFigure.GetFigurePoints()
-            .All(part => part.Y + 1 < height &&
-                         partsOnBottom[part.Y + 1][part.X] == emptyCellBrush);
+        int cellWidth = fieldWidth / width;
+        int cellHeight = fieldHeight / height;
+
+        for (int x = 0; x < width; x++)
+            for (int y = 0; y < height; y++)
+                graphics.FillRectangle(partsOnBottom[y][x],
+                    cellWidth * x,
+                    cellHeight * y,
+                    cellWidth,
+                    cellHeight);
+        currentFigure.DrawFigure(graphics, cellWidth, cellHeight);
+
+        for (int x = 0; x < width; x++)
+            for (int y = 0; y < height; y++)
+                graphics.DrawRectangle(gridPen,
+                    cellWidth * x,
+                    cellHeight * y,
+                    cellWidth,
+                    cellHeight);
     }
 
-    private bool CanMoveFigureLeft()
+    public void DrawNextFigure(Graphics graphics, int fieldWidth, int fieldHeight)
     {
-        return currentFigure.GetFigurePoints()
-            .All(part => part.X > 0 &&
-                             partsOnBottom[part.Y][part.X - 1] == emptyCellBrush);
-    }
-    private bool CanMoveFigureRight()
-    {
-        return currentFigure.GetFigurePoints()
-            .All(part => part.X < width - 1 &&
-                             partsOnBottom[part.Y][part.X + 1] == emptyCellBrush);
-    }
+        int cellWidth = fieldWidth / width;
+        int cellHeight = fieldHeight / height;
 
-    private bool CanRotateFigure()
-    {
-        return currentFigure.GetNextRotationFigurePoints()
-            .All(part => (part.X >= 0 &&
-                              part.X < width &&
-                              part.Y >= 0 &&
-                              part.Y < height &&
-                              partsOnBottom[part.Y][part.X] == emptyCellBrush));
+        nextFigure.DrawFigureStructure(graphics, cellWidth, cellHeight);
     }
 
     public void RotateFigure()
     {
-        if (CanRotateFigure())
-        {
-            currentFigure.Rotate();
-        }
+        if (CanRotateFigure()) currentFigure.Rotate();
     }
 
     public void MoveFigureLeft()
@@ -104,34 +101,66 @@ public class Game
         {
             AddFigureToPartsOnBottom();
 
+            if (IsDefeat()) ShowFailMessage();
+
             ClearFullLinesPartsOnBottom();
 
+            currentFigure.ZeroingCoordinatesFigure();
             currentFigure = nextFigure;
             currentFigure.ReduceHorizontally(width / 2 - 1);
-            nextFigure = new Figure(GetRandomFigureType());
+            nextFigure = Figure.GetRandomFigure();
         }
+    }
+
+    private bool CanMoveFigureDown()
+    {
+        return currentFigure.GetFigurePoints()
+            .All(part => part.Y + 1 < height &&
+                         partsOnBottom[part.Y + 1][part.X] == emptyCellBrush);
+    }
+
+    private bool CanMoveFigureLeft()
+    {
+        return currentFigure.GetFigurePoints()
+            .All(part => part.X > 0 &&
+                         partsOnBottom[part.Y][part.X - 1] == emptyCellBrush);
+    }
+
+    private bool CanMoveFigureRight()
+    {
+        return currentFigure.GetFigurePoints()
+            .All(part => part.X < width - 1 &&
+                         partsOnBottom[part.Y][part.X + 1] == emptyCellBrush);
+    }
+
+    private bool CanRotateFigure()
+    {
+        return currentFigure.GetNextRotationFigurePoints()
+            .All(part => part.X >= 0 &&
+                         part.X < width &&
+                         part.Y >= 0 &&
+                         part.Y < height &&
+                         partsOnBottom[part.Y][part.X] == emptyCellBrush);
     }
 
     private void AddFigureToPartsOnBottom()
     {
-        foreach (Point part in currentFigure.GetFigurePoints())
-        {
-            if (partsOnBottom[part.Y][part.X] != emptyCellBrush)
-            {
-                ShowFailMessage();
-                return;
-            }
-            partsOnBottom[part.Y][part.X] = currentFigure.Brush;
-        }
+        foreach (Point point in currentFigure.GetFigurePoints()) partsOnBottom[point.Y][point.X] = currentFigure.Brush;
+    }
+
+    private bool IsDefeat()
+    {
+        return currentFigure.GetFigurePoints()
+            .Any(part => part.Y == 0);
     }
 
     private void ClearFullLinesPartsOnBottom()
     {
-        int[] linesToDelete = this.currentFigure
+        int[] linesToDelete = currentFigure
             .GetFigurePoints()
             .Select(point => point.Y)
             .Distinct()
-            .Where(y => this.partsOnBottom[y].All(brush => brush != emptyCellBrush))
+            .Where(y => partsOnBottom[y].All(brush => brush != emptyCellBrush))
             .OrderBy(y => y)
             .ToArray();
 
@@ -162,11 +191,6 @@ public class Game
         MoveFigureDown();
     }
 
-    private FigureType GetRandomFigureType()
-    {
-        return (FigureType)random.Next(Enum.GetNames(typeof(FigureType)).Length);
-    }
-
     private void ShowFailMessage()
     {
         isPause = true;
@@ -177,33 +201,5 @@ public class Game
             ShowFailMessage();
     }
 
-    public void DrawGameField(Graphics graphics, int fieldWidth, int fieldHeight)
-    {
-        int cellWidth = fieldWidth / width;
-        int cellHeight = fieldHeight / height;
 
-        for (int x = 0; x < width; x++)
-            for (int y = 0; y < height; y++)
-            {
-                graphics.FillRectangle(partsOnBottom[y][x],
-                    cellWidth * x,
-                    cellHeight * y,
-                    cellWidth,
-                    cellHeight);
-                graphics.DrawRectangle(gridPen,
-                    cellWidth * x,
-                    cellHeight * y,
-                    cellWidth,
-                    cellHeight);
-            }
-        currentFigure.DrawFigure(graphics, cellWidth, cellHeight);
-    }
-
-    public void DrawNextFigure(Graphics graphics, int fieldWidth, int fieldHeight)
-    {
-        int cellWidth = fieldWidth / width;
-        int cellHeight = fieldHeight / height;
-
-        nextFigure.DrawFigureStructure(graphics, cellWidth, cellHeight);
-    }
 }
