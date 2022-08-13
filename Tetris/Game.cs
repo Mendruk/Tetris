@@ -4,24 +4,24 @@ public class Game
 {
     private readonly Brush emptyCellBrush = Brushes.Azure;
     private readonly Pen gridPen = Pens.Black;
+    private readonly int width  = 10;  
     private readonly int height = 20;
-    private readonly int width = 10;
     private Figure currentFigure;
     private Figure nextFigure;
-    private List<Brush[]> partsOnBottom;
+    private List<Brush[]> partsOnBottom; //partsOnBottom[y][x]
     private bool isPause = true;
+
+    public int Score { get; private set; }
 
     public Game()
     {
         Start();
-        currentFigure = new Figure(FigureType.T);
     }
-
-    public int Score { get; private set; }
 
     private void Start()
     {
         Score = 0;
+
         currentFigure = Figure.GetRandomFigure();
         currentFigure.ReduceHorizontally(width / 2 - 1);
         nextFigure = Figure.GetRandomFigure();
@@ -45,22 +45,23 @@ public class Game
 
     public void DrawGameField(Graphics graphics, int fieldWidth, int fieldHeight)
     {
-        int cellWidth = fieldWidth / width;
+        int cellWidth  = fieldWidth  / width;
         int cellHeight = fieldHeight / height;
 
         for (int x = 0; x < width; x++)
             for (int y = 0; y < height; y++)
                 graphics.FillRectangle(partsOnBottom[y][x],
-                    cellWidth * x,
+                    cellWidth  * x,
                     cellHeight * y,
                     cellWidth,
                     cellHeight);
+
         currentFigure.DrawFigure(graphics, cellWidth, cellHeight);
 
         for (int x = 0; x < width; x++)
             for (int y = 0; y < height; y++)
                 graphics.DrawRectangle(gridPen,
-                    cellWidth * x,
+                    cellWidth  * x,
                     cellHeight * y,
                     cellWidth,
                     cellHeight);
@@ -68,7 +69,7 @@ public class Game
 
     public void DrawNextFigure(Graphics graphics, int fieldWidth, int fieldHeight)
     {
-        int cellWidth = fieldWidth / width;
+        int cellWidth  = fieldWidth  / width;
         int cellHeight = fieldHeight / height;
 
         nextFigure.DrawFigureStructure(graphics, cellWidth, cellHeight);
@@ -101,51 +102,60 @@ public class Game
         {
             AddFigureToPartsOnBottom();
 
-            if (IsDefeat()) ShowFailMessage();
+            if (IsDefeat())
+                ShowFailMessage();
 
             ClearFullLinesPartsOnBottom();
 
-            currentFigure.ZeroingCoordinatesFigure();
+            currentFigure.ZeroingCoordinatesAndRotationOfFigure();
             currentFigure = nextFigure;
             currentFigure.ReduceHorizontally(width / 2 - 1);
+
             nextFigure = Figure.GetRandomFigure();
         }
+    }
+
+    public void PutDownFigure()
+    {
+        do MoveFigureDown();
+        while (CanMoveFigureDown());
     }
 
     private bool CanMoveFigureDown()
     {
         return currentFigure.GetFigurePoints()
             .All(part => part.Y + 1 < height &&
-                         partsOnBottom[part.Y + 1][part.X] == emptyCellBrush);
+                             partsOnBottom[part.Y + 1][part.X] == emptyCellBrush);
     }
 
     private bool CanMoveFigureLeft()
     {
         return currentFigure.GetFigurePoints()
             .All(part => part.X > 0 &&
-                         partsOnBottom[part.Y][part.X - 1] == emptyCellBrush);
+                             partsOnBottom[part.Y][part.X - 1] == emptyCellBrush);
     }
 
     private bool CanMoveFigureRight()
     {
         return currentFigure.GetFigurePoints()
             .All(part => part.X < width - 1 &&
-                         partsOnBottom[part.Y][part.X + 1] == emptyCellBrush);
+                             partsOnBottom[part.Y][part.X + 1] == emptyCellBrush);
     }
 
     private bool CanRotateFigure()
     {
         return currentFigure.GetNextRotationFigurePoints()
             .All(part => part.X >= 0 &&
-                         part.X < width &&
-                         part.Y >= 0 &&
-                         part.Y < height &&
-                         partsOnBottom[part.Y][part.X] == emptyCellBrush);
+                             part.X < width &&
+                             part.Y >= 0 &&
+                             part.Y < height &&
+                             partsOnBottom[part.Y][part.X] == emptyCellBrush);
     }
 
     private void AddFigureToPartsOnBottom()
     {
-        foreach (Point point in currentFigure.GetFigurePoints()) partsOnBottom[point.Y][point.X] = currentFigure.Brush;
+        foreach (Point point in currentFigure.GetFigurePoints())
+            partsOnBottom[point.Y][point.X] = currentFigure.Brush;
     }
 
     private bool IsDefeat()
@@ -184,17 +194,11 @@ public class Game
         return 0;
     }
 
-    public void PutDownFigure()
-    {
-        while (CanMoveFigureDown())
-            MoveFigureDown();
-        MoveFigureDown();
-    }
-
     private void ShowFailMessage()
     {
         isPause = true;
         DialogResult result = MessageBox.Show("Game Over! Restart?", "Game Over", MessageBoxButtons.YesNo);
+
         if (result == DialogResult.Yes)
             Start();
         if (result == DialogResult.No)
